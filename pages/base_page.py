@@ -37,7 +37,7 @@ class BasePage():
 			return False
 		return True
 
-# проверки отчутствия элементов
+# проверки отcутствия элементов
 
 	def is_not_element_present(self, how, what, timeout=4):  # проверка что элемента нет на странице (ждем 4 сек)
 		try:
@@ -53,7 +53,12 @@ class BasePage():
 			return False
 		return True
 
-# прочие функции
+# прочие проверки
+
+	def should_be_authorized_user(self):
+		assert self.is_element_present(*BasePageLocators.USER_ICON), "User icon is not presented, probably unauthorised user"
+
+# вспомогательные функции
 
 	def solve_quiz_and_get_code(self):                       # формула расчета квиза
 		alert = self.browser.switch_to.alert
