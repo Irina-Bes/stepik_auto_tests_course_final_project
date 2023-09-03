@@ -12,15 +12,23 @@ class BasePage():
 		self.url = url
 		self.browser.implicitly_wait(timeout)
 
+	def open(self):                                    # открытие страницы
+		self.browser.get(self.url)
+
+# переходы на страницы
+
 	def go_to_login_page(self):                        # переход на страницу логина
 		link = self.browser.find_element(*BasePageLocators.LOGIN_LINK)
 		link.click()
 
+	def go_to_basket(self):                            # переход в корзину по кропке в шапке
+		basket_link = self.browser.find_element(*BasePageLocators.BASKET_LINK)
+		basket_link.click()
+
+# проверки наличия элементов
+
 	def should_be_login_link(self):                    # проверка наличия ссылки на страницу логина
 		assert self.is_element_present(*BasePageLocators.LOGIN_LINK), "Login link is not presented"
-
-	def open(self):                                    # открытие страницы
-		self.browser.get(self.url)
 
 	def is_element_present(self, how, what):           # проверка что элемент есть на странице
 		try:
@@ -28,6 +36,8 @@ class BasePage():
 		except (NoSuchElementException):
 			return False
 		return True
+
+# проверки отчутствия элементов
 
 	def is_not_element_present(self, how, what, timeout=4):  # проверка что элемента нет на странице (ждем 4 сек)
 		try:
@@ -42,6 +52,8 @@ class BasePage():
 		except TimeoutException:
 			return False
 		return True
+
+# прочие функции
 
 	def solve_quiz_and_get_code(self):                       # формула расчета квиза
 		alert = self.browser.switch_to.alert
