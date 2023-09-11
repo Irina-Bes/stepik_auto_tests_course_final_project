@@ -23,6 +23,12 @@ class ProductPage(BasePage):
 		assert self.is_element_present(*ProductPageLocators.ADDED_PRODUCT_PRICE), "Added product price is not presented"
 		return self.browser.find_element(*ProductPageLocators.ADDED_PRODUCT_PRICE).text
 
+	def should_be_identical_names(self, name1, name2):    # сравнение наименований
+		assert name1 == name2, "Product name and Added product name are different" 
+
+	def should_be_identical_prices(self, price1, price2):    # сравнение цен
+		assert price1 == price2, "Product price and Added product price are different"
+
 	def should_not_be_success_message(self):    # проверка на то, что не должно быть сообщения об успешном добавлении товара в корзину
 		assert self.is_not_element_present(*ProductPageLocators.SUCCESS_MESSAGE), "Success message is presented, but should not be"
 

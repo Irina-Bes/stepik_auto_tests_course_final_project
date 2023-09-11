@@ -6,7 +6,7 @@ import pytest
 import time
 
 @pytest.mark.parametrize('offer_nummer', ["0", "1", "2", "3", "4", "5", "6", pytest.param("7", marks=pytest.mark.xfail), "8", "9"])
-@pytest.mark.skip
+@pytest.mark.need_review
 def test_guest_can_add_product_to_basket(browser, offer_nummer):
 	link = f"http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer{offer_nummer}"
 	page = ProductPage(browser,link)                # инициализируем Page Object, передаем в конструктор экземпляр драйвера и url адрес 
@@ -17,8 +17,8 @@ def test_guest_can_add_product_to_basket(browser, offer_nummer):
 	page.solve_quiz_and_get_code()                  # посчитать результат математического выражения и ввести ответ
 	added_product_name = page.set_added_product_name()    # получаем название добавленного в корзину продукта (из сообщения)
 	added_product_price = page.set_added_product_price()  # получаем цену добавленного в корзину продукта (из сообщения)
-	assert product_name == added_product_name, "Product name and Added product name are different" 
-	assert product_price == added_product_price, "Product price and Added product price are different"
+	page.should_be_identical_names(product_name, added_product_name)       # проверяем что исходное название товара совпадает с названием добавленного в корзину товара
+	page.should_be_identical_prices(product_price, added_product_price)    # проверяем что исходная цена товара совпадает с ценой добавленного в корзину товара
 
 @pytest.mark.xfail
 def test_guest_cant_see_success_message_after_adding_product_to_basket(browser):
@@ -48,34 +48,37 @@ def test_guest_should_see_login_link_on_product_page(browser):
 	page.open()                                     # открываем страницу
 	page.should_be_login_link()                     # проверяем что есть ссылка перехода на логин
 
+@pytest.mark.need_review
 def test_guest_can_go_to_login_page_from_product_page(browser):
 	link = "http://selenium1py.pythonanywhere.com/en-gb/catalogue/the-city-and-the-stars_95/"
-	page = MainPage(browser,link)                         # инициализируем Page Object, передаем в конструктор экземпляр драйвера и url адрес 
+	page = ProductPage(browser, link)                     # инициализируем Page Object, передаем в конструктор экземпляр драйвера и url адрес 
 	page.open()                                           # открываем страницу
-	page.go_to_login_page()                               # выполняем метод страницы — переходим на страницу логина
+	page.go_to_login_page()                               # переходим на страницу логина
 	login_page = LoginPage(browser, browser.current_url)  # инициализируем страницу логина
-	login_page.should_be_login_page()                     # выполняем метод страницы - проверка страницы логина
+	login_page.should_be_login_page()                     # проверка страницы логина
 
+@pytest.mark.need_review
 def test_guest_cant_see_product_in_basket_opened_from_product_page(browser):
 	link = "http://selenium1py.pythonanywhere.com/en-gb/catalogue/the-city-and-the-stars_95/"
-	page = BasketPage(browser,link)                      # инициализируем Page Object, передаем в конструктор экземпляр драйвера и url адрес 
-	page.open()                                          # открываем страницу
-	page.go_to_basket()                                  # переход в корзину по кропке в шапке
-	page.should_not_be_product_in_basket()               # проверка, что в корзине нет товара
-	page.should_be_text_about_not_products_in_basket()   # должен быть текст о том, что корзина пуста
+	page = ProductPage(browser,link)                      # инициализируем Page Object, передаем в конструктор экземпляр драйвера и url адрес 
+	page.open()                                           # открываем страницу
+	page.go_to_basket()                                   # переход в корзину по кнопке в шапке
+	basket_page = BasketPage(browser, browser.current_url)  # инициализируем страницу корзины
+	basket_page.should_not_be_product_in_basket()               # проверка, что в корзине нет товара
+	basket_page.should_be_text_about_not_products_in_basket()   # должен быть текст о том, что корзина пуста
 
 
 @pytest.mark.user_on_product_page
 class TestUserAddToBasketFromProductPage():
 
 	@pytest.fixture(scope="function", autouse=True)
-	def setup(self, browser):
-		link = "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/"
+	def setup(self, browser):                           # регистрация нового пользователя - выполнится перед запуском каждого теста из класса
+		link = "http://selenium1py.pythonanywhere.com/"
 		page = LoginPage(browser,link)                  # инициализируем Page Object, передаем в конструктор экземпляр драйвера и url адрес 
 		page.open()                                     # открываем страницу
 		page.go_to_login_page()                         # переходим на страницу логина
-		email = str(time.time()) + "@fakemail.org"
-		password = str(time.time()) + "fakepassword"
+		email = str(time.time()) + "@fakemail.org"      # генерируем тестовый email
+		password = str(time.time()) + "fakepassword"    # генерируем тестовый пароль
 		page.register_new_user(email, password)         # регистрируем пользователя
 		page.should_be_authorized_user()                # проверяем что пользователь зарегестрирован
 
@@ -85,6 +88,7 @@ class TestUserAddToBasketFromProductPage():
 		page.open()                                     # открываем страницу
 		page.should_not_be_success_message()            # проверка на то, что не должно быть сообщения об успешном добавлении товара в корзину
 
+	@pytest.mark.need_review
 	def test_user_can_add_product_to_basket(self, browser):
 		link = "http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer0"
 		page = ProductPage(browser,link)                      # инициализируем Page Object, передаем в конструктор экземпляр драйвера и url адрес 
@@ -95,5 +99,6 @@ class TestUserAddToBasketFromProductPage():
 		page.solve_quiz_and_get_code()                        # посчитать результат математического выражения и ввести ответ
 		added_product_name = page.set_added_product_name()    # получаем название добавленного в корзину продукта (из сообщения)
 		added_product_price = page.set_added_product_price()  # получаем цену добавленного в корзину продукта (из сообщения)
-		assert product_name == added_product_name, "Product name and Added product name are different" 
-		assert product_price == added_product_price, "Product price and Added product price are different"
+		page.should_be_identical_names(product_name, added_product_name)       # проверяем что исходное название товара совпадает с названием добавленного в корзину товара
+		page.should_be_identical_prices(product_price, added_product_price)    # проверяем что исходная цена товара совпадает с ценой добавленного в корзину товара
+

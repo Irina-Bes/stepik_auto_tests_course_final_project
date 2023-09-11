@@ -10,9 +10,6 @@ class BasketPageLocators():
 	BASKET_ITEMS = (By.CSS_SELECTOR, ".basket-items")
 	NOT_PRODUCT_IN_BASKET = (By.CSS_SELECTOR, "#content_inner p")
 
-#class MainPageLocators():
-
-
 class LoginPageLocators():
 	LOGIN_FORM = (By.CSS_SELECTOR, "#login_form")
 	REGISTER_FORM = (By.CSS_SELECTOR, "#register_form")
